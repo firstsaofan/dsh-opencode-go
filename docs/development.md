@@ -17,11 +17,19 @@ plugin, how to re-measure the live facts, and how the code is laid out.
 ## Verification
 
 ```sh
-npm test            # 398 offline checks: config, SSE framing, catalog, all three protocols, adapter, plugin body, the settings bridge, the client bundle, the display metadata, release coherence and the repository's own CI
+npm test            # 428 offline checks: config, SSE framing, catalog, all three protocols, adapter, plugin body, endpoint health, the settings bridge, the client bundle, the display metadata, release coherence and the repository's own CI
 npm run test:cordis # 43 checks mounting the plugin on the harness's own cordis
 npm run test:live   # the live suite; needs OC_KEY
 npm run check:pack  # what `npm publish` would upload
+npm run probe       # one endpoint-health round against the real service; no key, no quota
 ```
+
+`npm run probe` is the one command here that reaches the network without a
+credential. It exists because the endpoint-health classification rests on an
+assumption about a live service — that a route which exists answers `400` and a
+route which does not answers `404` — and no amount of stubbing checks that. It
+sends three requests that cannot generate anything, so it is free, and it is worth
+running after touching anything in `lib/health/`.
 
 The count above is restated in both README badges, in this page, in its Chinese
 counterpart, and in both changelog files, so a new case moves it in six files —

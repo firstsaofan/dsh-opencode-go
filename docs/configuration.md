@@ -35,7 +35,13 @@ view, or read `Config` from the plugin for the authoritative list.
 | `hideTrainingModels` | `false` | Keep models whose provider trains on request data out of the listing (see [Models](models.md#models-that-train-on-request-data)) |
 | `hiddenModels` | `[]` | Model ids this deployment keeps out of the listing; hiding never makes a model unusable |
 | `modelVariants` | `[]` | Named presets of one model, each offered as its own `<model>@<name>` entry |
-| `healthCheck` | `off` | `startup` logs a credential + catalog report |
+| `healthCheck` | `both` | `startup` logs a credential + catalog report; `scheduled` watches the endpoint on a timer; `both` does both. Every mode but `off` also reacts to a live refusal that could mean the endpoint moved. **This fork defaults to `both`; upstream defaults to `off`.** See [Endpoint health](health.md). |
+| `healthIntervalSeconds` | `21600` | How often a scheduled round runs. Six hours by default, matching `modelsCacheSeconds` — one watch per catalog refresh rather than a faster loop over the same endpoint |
+| `healthTimeoutSeconds` | `15` | Per-request ceiling for a probe. A probe asks a question; it does not wait for a model |
+| `healthRetrySeconds` | `[30, 120, 600, 3600]` | The backoff ladder for a round that found the endpoint gone, in seconds. `healthCandidates: off` and a recovered route both reset it |
+| `healthCandidates` | `known` | Whether a failed round may go looking for the endpoint's new address, and where: `known` (the shipped layouts), `custom` (reads `healthCandidateURLs`), or `off` |
+| `healthCandidateURLs` | `[]` | Extra API roots to try when `healthCandidates: custom` |
+| `healthPath` | `~/.dsh/cache/opencode-go-health.json` | Where the last round is kept, beside the model cache and the usage file |
 | `retryPolicy` | normal, 5 retries | Provider-owned policy the retry executor applies |
 
 ## Fast entries
@@ -187,6 +193,8 @@ while the client is open:
 | `/opencode-go/usage` | `GET` | the usage table for `?days=1`, `7`, or `30` |
 | `/opencode-go/subscription` | `GET` | the subscription's own quota, read from the service; `?refresh=1` bypasses the cache |
 | `/opencode-go/activity` | `GET` | whether that quota answer has gone old — answered from memory, never from the service |
+| `/opencode-go/health` | `GET` | the endpoint-health probe's last round, answered from memory; never spends a request |
+| `/opencode-go/health-check` | `POST` | runs one health round now — the only endpoint here a person asks for on purpose |
 
 How the surface is guarded:
 

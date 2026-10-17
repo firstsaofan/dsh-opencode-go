@@ -4,7 +4,7 @@
 
 [![npm 版本](https://img.shields.io/npm/v/dsh-llm-opencode-go)](https://www.npmjs.com/package/dsh-llm-opencode-go)
 [![npm 下载量](https://img.shields.io/npm/dm/dsh-llm-opencode-go)](https://www.npmjs.com/package/dsh-llm-opencode-go)
-[![离线检查](https://img.shields.io/badge/offline_checks-398-brightgreen)](docs/development.zh-CN.md)
+[![离线检查](https://img.shields.io/badge/offline_checks-428-brightgreen)](docs/development.zh-CN.md)
 [![ci](https://github.com/a2580vb/dsh-llm-opencode-go/actions/workflows/ci.yml/badge.svg)](https://github.com/a2580vb/dsh-llm-opencode-go/actions/workflows/ci.yml)
 [![许可证](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
@@ -51,15 +51,28 @@
 
 ### 安装
 
+**装这棵工作树**——fork 里通常是这条，因为你要的改动不在 npm 上：
+
+```sh
+git clone https://github.com/firstsaofan/dsh-opencode-go.git
+cd dsh-opencode-go
+dsh plugin --profile web add .
+```
+
+**改装已发布的包**：
+
 ```sh
 dsh plugin add dsh-llm-opencode-go
 ```
 
-安装后需要**完全重启**该 profile：bundle 层只在启动时读取。启动日志里应出现：
+两种方式都需要**完全重启**该 profile：bundle 层只在启动时读取。启动日志里应出现：
 
 ```
 dsh-llm-opencode-go: provider "opencode-go" ready at https://opencode.ai/zen/go/v1 (credential OPENCODE_GO_API_KEY, models discover)
 ```
+
+一台从没跑过这个插件的机器——前置条件、两条安装路径、三步验证、症状对照表——见
+[安装与验证](docs/install.zh-CN.md)。
 
 ### 给它一个 Key
 
@@ -104,10 +117,12 @@ config:
 
 细节都在 [`docs/`](docs/models.zh-CN.md) 里，按需查阅：
 
+- [安装与验证](docs/install.zh-CN.md)——前置条件、两条安装路径、三步验证、症状对照表
 - [模型](docs/models.zh-CN.md)——按模型选协议、训练数据门控、容量快照、text/image 划分
 - [配置](docs/configuration.zh-CN.md)——完整字段表、塑造目录、图片输入、图形化配置与快速入口
 - [线协议](docs/wire-protocol.zh-CN.md)——endpoint 与鉴权、`x-opencode-session`、推理与工具调用翻译
 - [可靠性](docs/reliability.zh-CN.md)——稳定错误码与限制
+- [接口健康](docs/health.zh-CN.md)——确认接口地址还在，以及它变了之后该改用什么
 - [开发](docs/development.zh-CN.md)——项目状态、验证套件、重测探针、目录结构
 
 ## 许可证

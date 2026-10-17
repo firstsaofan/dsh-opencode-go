@@ -4,7 +4,7 @@
 
 [![npm version](https://img.shields.io/npm/v/dsh-llm-opencode-go)](https://www.npmjs.com/package/dsh-llm-opencode-go)
 [![npm downloads](https://img.shields.io/npm/dm/dsh-llm-opencode-go)](https://www.npmjs.com/package/dsh-llm-opencode-go)
-[![offline checks](https://img.shields.io/badge/offline_checks-398-brightgreen)](docs/development.md#verification)
+[![offline checks](https://img.shields.io/badge/offline_checks-428-brightgreen)](docs/development.md#verification)
 [![ci](https://github.com/a2580vb/dsh-llm-opencode-go/actions/workflows/ci.yml/badge.svg)](https://github.com/a2580vb/dsh-llm-opencode-go/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
@@ -54,18 +54,31 @@ restart.
 
 ## Install and use
 
-### Install
+**Installing this working tree** — the usual case in a fork, since the changes you
+want are not on npm:
+
+```sh
+git clone https://github.com/firstsaofan/dsh-opencode-go.git
+cd dsh-opencode-go
+dsh plugin --profile web add .
+```
+
+**Installing the published package** instead:
 
 ```sh
 dsh plugin add dsh-llm-opencode-go
 ```
 
-Then **fully restart** the profile: bundle layers are read at startup. The startup
-log should carry:
+Either way, **fully restart** the profile: bundle layers are read at startup. The
+startup log should carry:
 
 ```
 dsh-llm-opencode-go: provider "opencode-go" ready at https://opencode.ai/zen/go/v1 (credential OPENCODE_GO_API_KEY, models discover)
 ```
+
+A machine that has never run this — prerequisites, both install routes, the three
+verification checks, and a symptom-to-fix table — is covered in
+[Install and verify](docs/install.md).
 
 ### Give it a key
 
@@ -117,10 +130,12 @@ mounted only by a deployment that serves the web client. See
 
 Details live under [`docs/`](docs/models.md); start with what you need:
 
+- [Install and verify](docs/install.md) — prerequisites, both install routes, three checks, symptom-to-fix table
 - [Models](docs/models.md) — per-model protocol table, training-data gate, capacity snapshot, text/image split
 - [Configuration](docs/configuration.md) — full field table, shaping the catalog, image input, the graphical and fast entries
 - [Wire protocol](docs/wire-protocol.md) — endpoints and auth, `x-opencode-session`, reasoning and tool-calling translations
 - [Reliability](docs/reliability.md) — stable failure codes and limits
+- [Endpoint health](docs/health.md) — proving the API root is still there, and what to set instead when it moves
 - [Development](docs/development.md) — project status, verification suites, re-measure probes, architecture
 
 ## License

@@ -35,7 +35,13 @@
 | `hideTrainingModels` | `false` | 把 provider 会用请求数据训练的模型从列表中摘掉（见[模型](models.zh-CN.md#会训练请求数据的模型)） |
 | `hiddenModels` | `[]` | 本部署要从列表中摘掉的模型 id；隐藏永远不等于不可用 |
 | `modelVariants` | `[]` | 某个模型的命名预设，各自以 `<模型>@<名字>` 作为独立条目出现 |
-| `healthCheck` | `off` | `startup` 会记录一份凭据 + 目录报告 |
+| `healthCheck` | `both` | `startup` 记录一份凭据 + 目录报告；`scheduled` 按计划盯住接口地址；`both` 两者都做。除 `off` 外的每种模式还会对"可能是接口变了"的实时拒绝做出反应。**本 fork 默认 `both`；upstream 默认 `off`。** 见[接口健康](health.zh-CN.md) |
+| `healthIntervalSeconds` | `21600` | 定时检查的间隔。默认六小时，与 `modelsCacheSeconds` 一致——一次目录刷新配一次探活，而不是对同一个地址跑得更快的循环 |
+| `healthTimeoutSeconds` | `15` | 单个探针请求的上限。探针是在问一个问题，不是在等一个模型 |
+| `healthRetrySeconds` | `[30, 120, 600, 3600]` | 发现接口没了之后的退避阶梯，单位秒。`healthCandidates: off` 与地址恢复都会把它清零 |
+| `healthCandidates` | `known` | 一轮失败之后，是否允许去寻找接口的新地址，以及去哪里找：`known`（内置的几种布局）、`custom`（读 `healthCandidateURLs`）、`off` |
+| `healthCandidateURLs` | `[]` | `healthCandidates: custom` 时额外尝试的接口根地址 |
+| `healthPath` | `~/.dsh/cache/opencode-go-health.json` | 上一轮检查结果存放的位置，与模型缓存、用量文件放在一起 |
 | `retryPolicy` | normal，5 次重试 | 由重试执行器采用的 provider 自有策略 |
 
 ## 快速入口
@@ -149,6 +155,8 @@
 | `/opencode-go/usage` | `GET` | `?days=1`、`7`、`30` 对应的用量表 |
 | `/opencode-go/subscription` | `GET` | 从服务读取的订阅额度；`?refresh=1` 绕过缓存 |
 | `/opencode-go/activity` | `GET` | 这份额度答案是否已经过时——只在内存里判断，绝不访问服务 |
+| `/opencode-go/health` | `GET` | 接口健康探针的上一轮结果——只在内存里作答，打开页面不产生任何请求 |
+| `/opencode-go/health-check` | `POST` | 立即跑一轮健康检查——这张表里唯一一个由人主动发起的请求 |
 
 访问规则：
 

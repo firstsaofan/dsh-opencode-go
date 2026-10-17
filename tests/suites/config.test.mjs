@@ -33,7 +33,7 @@ export default {
         is(config.sessionHeader, 'session-id')
         is(config.sendClientHeader, true)
         is(config.hideTrainingModels, false)
-        is(config.healthCheck, 'off')
+        is(config.healthCheck, 'both')
         ok(Object.isFrozen(config))
       },
     },
@@ -70,6 +70,55 @@ export default {
             ok(thrown !== undefined, `${field}: ${String(value)} was refused`)
             ok(String(thrown?.message).includes(field), `${field} was named`)
           }
+        }
+      },
+    },
+    {
+      name: 'endpoint health is on by default in this fork, and can be turned off',
+      run() {
+        // Deliberately divergent from upstream, which defaults to `off`: this fork
+        // exists to answer a specific problem — OpenCode Go moves its API root
+        // without announcing it — and a probe nobody has to ask for is the only one
+        // that helps. A rebase has to carry this line; the test is here so the
+        // divergence is a decision on record rather than an accident.
+        const bare = resolveConfig(undefined)
+        is(bare.healthCheck, 'both')
+        is(resolveConfig({ healthCheck: 'off' }).healthCheck, 'off')
+        is(bare.healthIntervalSeconds, 21_600)
+        is(bare.healthTimeoutSeconds, 15)
+        equal(bare.healthRetrySeconds, [30, 120, 600, 3600])
+        is(bare.healthCandidates, 'known')
+        equal(bare.healthCandidateURLs, [])
+        is(bare.healthPath, undefined, 'the file path is derived, not written into the config')
+
+        is(resolveConfig({ healthCheck: 'scheduled' }).healthCheck, 'scheduled')
+        is(resolveConfig({ healthCheck: 'both' }).healthCheck, 'both')
+        // A deployment may retune the ladder for its own sleeping pattern.
+        equal(resolveConfig({ healthRetrySeconds: [5, 10] }).healthRetrySeconds, [5, 10])
+      },
+    },
+    {
+      name: 'health fields are validated by name rather than absorbed',
+      run: async () => {
+        for (const [value, field] of [
+          ['weekly', 'healthCheck'],
+          ['yes', 'healthCandidates'],
+        ]) {
+          await rejectsWith(Promise.resolve().then(() => resolveConfig({ [field]: value })), field)
+          const issues = Config['~standard'].validate({ [field]: value }).issues
+          ok(issues.some((issue) => String(issue.message).includes(field)), `${field} named by the schema`)
+        }
+        for (const field of ['healthIntervalSeconds', 'healthTimeoutSeconds']) {
+          await rejectsWith(Promise.resolve().then(() => resolveConfig({ [field]: 0 })), field)
+        }
+        // A candidate is a URL this adapter will append paths to, so it gets the
+        // same treatment `baseURL` does: absolute, http(s), and without a query.
+        equal(resolveConfig({ healthCandidateURLs: ['https://example.test/v1/', 'https://example.test/v1'] }).healthCandidateURLs, ['https://example.test/v1'])
+        for (const bad of ['/relative', 'ftp://example.test', 'https://example.test/v1?x=1', 7]) {
+          await rejectsWith(
+            Promise.resolve().then(() => resolveConfig({ healthCandidateURLs: [bad] })),
+            'healthCandidateURLs',
+          )
         }
       },
     },

@@ -6,6 +6,58 @@ Releases carry the notes that appear on the GitHub release and, through it, on t
 plugin market's **What changed** link. Keep the newest section at the top, give
 every released version one, and keep each entry to a line if it fits.
 
+## Unreleased
+
+### Added
+- 428 offline checks, up from 398: the endpoint-health classification,
+  the probe body, the protocol-aware model choice, the backoff ladder and the
+  circuit breaker, plus install-time validation of every new field.
+
+
+- **A procedure for a machine that has never run this**
+  ([Install and verify](docs/install.md)). Prerequisites with a check for each,
+  the three install routes with what distinguishes them, three read-only
+  verification steps, and a symptom-to-fix table. The README's install section
+  covered only the published package, so the local-checkout route — the one this
+  fork exists for — was documented nowhere. The most common first-run failure is
+  written down: a key stored under a name the route does not read produces the
+  same `401` as a wrong key, and the startup line's credential reference is what
+  tells the two apart.
+- **Endpoint health, so a moved API root is reported before every conversation
+  fails.** OpenCode Go's API root has no change notice: the documented per-protocol
+  layout and the flat root this plugin uses both keep answering, and neither
+  appears in a changelog. `healthCheck: scheduled` (or `both`) probes each
+  protocol path with a request that cannot generate anything, and reads the answer
+  — a `400` proves the route is alive, a `404` proves it is not. `GET
+  /opencode-go/health` answers from memory; *Check now* on the page, or `POST
+  /opencode-go/health-check`, runs a round. When the root has moved, the round
+  names the roots that would serve the lost protocols. See [Endpoint
+  health](docs/health.md).
+- **`healthCheck` now defaults to `both`, where upstream defaults to `off`.** A
+  deliberate divergence: a probe that is off by default protects only the people
+  who already knew to look for a silent endpoint change. The cost is three
+  requests every six hours, none of which can generate anything. The probe also
+  stays quiet when no credential resolves — a deployment that has not stored a
+  key yet would otherwise collect three warnings every round, and a warning that
+  repeats forever stops being read. Set `healthCheck: off` for upstream's
+  behaviour.
+- **A protocol rejection is no longer treated as a degradation, and the probe now
+  names a model each route serves.** `ModelProtocolUnsupported` proves the route
+  exists — the relay had to resolve the route *and* the model to answer it — so a
+  round naming one chat-only model across three paths was warning twice per round,
+  forever. Found by a live round with a real credential, not by the tests: the
+  probe sends a request body that is refused during validation
+  (`messages must not be empty`), which is what makes it free. The probe now takes
+  each model's protocols from the catalog and names one the probed route actually
+  serves.
+- **A live refusal that looks like the endpoint now triggers a round
+  immediately.** The valuable trigger is the one that fires while the reader is
+  already looking at a failure. A request-level refusal — a context overflow, a
+  spent plan — is left alone.
+- **Per-protocol auth headers are shared by generation and the probe**
+  (`lib/protocol/auth.js`), so a probe cannot be told about the relay's own auth
+  contract and mistake it for a routing problem.
+
 ## 0.2.2 — 2026-10-06
 
 An interface release, and the release process is part of it: the quota rhythm is

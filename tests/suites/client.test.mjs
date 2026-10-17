@@ -412,7 +412,11 @@ export default {
         // renamed route would be described as working while answering 404.
         for (const file of ['docs/configuration.md', 'docs/configuration.zh-CN.md']) {
           const text = readFileSync(join(ROOT, file), 'utf8')
-          const documented = [...new Set([...text.matchAll(/\/opencode-go\/[a-z]+/g)].map((match) => match[0]))].sort()
+          // The path segment allows hyphens, because a route that pairs a noun
+        // with an action (`health-check`) is a path segment this project's own
+        // naming already uses elsewhere. Without the hyphen the scan could not see
+        // such a route at all, and would then report it as undocumented.
+        const documented = [...new Set([...text.matchAll(/\/opencode-go\/[a-z-]+/g)].map((match) => match[0]))].sort()
           equal(documented, Object.values(UI_ROUTES).sort(), `${file} documents every route`)
           for (const route of Object.values(UI_ROUTES)) {
             ok(text.includes(`| \`${route}\` |`), `${file} documents ${route} in a table row`)
