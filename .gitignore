@@ -16,6 +16,13 @@ pnpm-lock.yaml
 # and an entry would defeat the point, since a screenshot the market is meant
 # to show has to be committed.
 promotion/
+# The IDE's own project directory: per machine, per developer, and full of state
+# that only means anything to the person who generated it. It sits here rather
+# than in the group above because, unlike the working notes, it appears the
+# moment anyone opens the project in a JetBrains IDE — so leaving it untracked is
+# what stops a commit from carrying a stranger's window layout. Team-wide
+# settings belong in a committed .editorconfig instead.
+.idea/
 # A local orientation note: this checkout's paths, the current check count, and
 # the rules a change tends to run into. It goes stale on every commit, and the
 # committed README, docs/ and CHANGELOG are the facts that ship — so it stays
